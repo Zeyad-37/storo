@@ -88,7 +88,7 @@ Storo.hasExpired("key").async(new CallBack<Boolean>);
 
 ### RxJava support
 
-If no callback is passed to ```async()```, it will return an ```Observable``` that will be scheduled on a background thread and observed on the main thread.
+If no callback is passed to ```async()```, it will return an ```Flowable``` that will be scheduled on a background IO thread.
 
 ## License
 
