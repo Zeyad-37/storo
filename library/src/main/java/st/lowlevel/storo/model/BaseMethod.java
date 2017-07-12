@@ -6,10 +6,11 @@ import android.support.annotation.Nullable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.schedulers.Schedulers;
 
 public abstract class BaseMethod<T> {
 
@@ -19,21 +20,20 @@ public abstract class BaseMethod<T> {
      * @return Observable<T>
      */
     @NonNull
-    public Observable<T> async() {
-        return Observable.create(new Observable.OnSubscribe<T>() {
+    public Flowable<T> async() {
+        return Flowable.create(new FlowableOnSubscribe<T>() {
             @Override
-            public void call(Subscriber<? super T> subscriber) {
+            public void subscribe(@io.reactivex.annotations.NonNull FlowableEmitter<T> emitter) throws Exception {
                 try {
                     T result = execute();
-                    subscriber.onNext(result);
-                    subscriber.onCompleted();
+                    emitter.onNext(result);
+                    emitter.onComplete();
                 } catch (Throwable t) {
-                    subscriber.onError(t);
+                    emitter.onError(t);
                 }
             }
-        })
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread());
+        }, BackpressureStrategy.BUFFER)
+                       .subscribeOn(Schedulers.io());
     }
 
     /**
